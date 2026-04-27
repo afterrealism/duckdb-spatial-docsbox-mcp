@@ -1,0 +1,176 @@
+# duckdb-spatial-docsbox-mcp (full reference)
+
+This is the long-form companion to `/llms.txt`. It covers the safety
+model, every tool's contract with a worked example, and operator setup.
+
+## Safety model (defence in depth)
+
+1. **Static SQL validation** (`sql_validator.py`)
+   - sqlglot parse with `dialect="duckdb"` — refuses anything sqlglot
+     can't parse as DuckDB.
+   - Denylist of statement kinds (DROP, DELETE, INSERT, UPDATE, ALTER,
+     CREATE, GRANT, REVOKE, COPY, MERGE, VACUUM, TRUNCATE, EXEC, CALL,
+     ATTACH, DETACH, INSTALL, LOAD, EXPORT, IMPORT, PRAGMA, CHECKPOINT,
+     USE, ...) and dangerous function names (`read_text`, `read_blob`,
+     `read_text_auto`, `read_blob_auto`, `read_file`, `read_files`,
+     `shell`, `system`).
+   - Refuses semicolon-separated multi-statements.
+   - Forces top level to be SELECT, WITH, or EXPLAIN.
+   - Auto-injects `LIMIT N` if missing.
+
+2. **Read-only connection** (`db.py`)
+   - File path: `duckdb.connect(path, read_only=True)`. All writes are
+     refused at the storage layer.
+   - `:memory:` path: a single shared writable connection per process,
+     guarded by a lock. Documented best-effort; the static validator
+     and denylist remain authoritative.
+   - Per-statement timeout: `threading.Timer` schedules
+     `connection.interrupt()`; the resulting `duckdb.InterruptException`
+     is mapped to a typed `TimeoutError`.
+
+3. **Bounded results**
+   - Default `max_rows` 200, hard cap 1000.
+   - Per-cell byte cap 64 KiB; oversize bytes shown as `<N bytes, truncated>`.
+
+4. **No process fan-out**
+   - The only subprocess-shaped tool is `run_locally`, which returns a
+     plan and never invokes anything.
+
+## Spatial extension bootstrap
+
+DuckDB extensions install to `~/.duckdb/extensions/`. This server runs
+a one-shot transient writable connection at startup to
+`INSTALL spatial; LOAD spatial;`, then reopens the database as
+read-only. Subsequent `LOAD spatial` calls on the read-only connection
+work because the binary is already cached on disk. Disable with
+`DUCKDB_DOCSBOX_LOAD_SPATIAL=0`.
+
+## Tools
+
+### list_tables(schema='main', include_views=true, limit=500)
+
+Returns user tables/views excluding catalog/system schemas
+(`pg_catalog`, `information_schema`, `system`, `temp`).
+
+```json
+{
+  "ok": true,
+  "tables": [
+    {"schema":"main","name":"suburbs","kind":"BASE TABLE","row_count":357,
+     "has_geom":true,"geom_columns":["geom"]}
+  ],
+  "count": 1
+}
+```
+
+### get_table_schema(table, sample_rows=3)
+
+Returns DDL + columns + primary key + indexes + N sample rows. Geometry
+columns in samples are returned as GeoJSON (via `ST_AsGeoJSON`).
+
+### get_column_values(table, column, limit=20)
+
+Distinct values from one column, ordered by frequency descending.
+Geometry columns are refused with a hint to use `get_table_schema`.
+
+### list_srids()
+
+Every distinct SRID observed via `ST_SRID(geom)` across geometry
+columns. **Important**: DuckDB-spatial does not persist SRIDs — every
+geometry reports SRID 0. The response always carries a `warning` field
+explaining this; downstream queries that require coordinate-system
+context must `ST_Transform(geom, 'EPSG:src', 'EPSG:dst')` explicitly.
+
+### get_relationships(table='')
+
+Foreign-key edges from `duckdb_constraints()`.
+
+### list_extensions()
+
+Installed/loaded extensions and their versions/descriptions.
+
+### pick_interesting_tables(limit=10, compute_extent=true)
+
+Heuristic ranking. Score = `log10(row_count) + 2*has_rtree_idx +
+1*geom_only + 1*inbound_fks`. With `compute_extent=true` the GeoJSON
+extent of each geometry table is included (via `ST_Extent_Agg` +
+`ST_AsGeoJSON`).
+
+### validate_sql(sql, default_limit=500)
+
+Static check; returns `{ok, sql, auto_limit_applied, error?, hint?}`.
+Cheap fast-fail before `execute_sql`.
+
+### explain_sql(sql, analyze=false)
+
+Returns a plain-text DuckDB plan (`EXPLAIN <sql>` or
+`EXPLAIN ANALYZE <sql>`). With `analyze=true` the query actually runs.
+JSON plans are not supported here because they require `PRAGMA`, which
+is denied.
+
+### execute_sql(sql, max_rows=200, geometry_format='raw')
+
+Runs the query against the read-only connection inside a wall-clock
+timeout. Returns `{ok, sql, columns, rows, row_count, truncated}`.
+Errors are mapped to typed kinds with hints (`timeout`,
+`undefined_object`, `binder_error`, `io_error`, `execute_failed`).
+`geometry_format` is currently documentation-only — wrap geometries in
+the SQL itself with `ST_AsGeoJSON(geom)` if you want JSON.
+
+### list_gdal_drivers(name_like='')
+
+Lists drivers exposed by `ST_Drivers()`. Optional substring filter on
+short_name (case-insensitive).
+
+### probe_external_file(path, format='auto', limit=5)
+
+Peeks at a local file's schema and sample rows. Format is auto-detected
+from extension: `.csv/.tsv/.txt` -> `read_csv_auto`, `.parquet/.pq` ->
+`read_parquet`, GDAL extensions (`.geojson`, `.shp`, `.gpkg`, `.kml`,
+`.gml`, `.gpx`, `.fgb`, `.geojsonl`) -> `ST_Read`. URLs (`://`) are
+refused; non-readable paths are refused.
+
+### duckdb_help(section='')
+
+Curated quick-reference for common DuckDB+spatial recipes (no SRID
+storage, R-Tree usage, distance metres without geography, KNN without
+`<->`, point-in-polygon, ST_Read, GeoParquet, common errors).
+
+### list_sections(package='') and get_documentation(section_id)
+
+Browse and fetch entries from `corpus/manifest.toml` (DuckDB, DuckDB
+spatial, GDAL, GeoParquet).
+
+### run_locally(task, ...)
+
+Plan-only tool that returns a structured shell-command plan for the
+DuckDB CLI: `connect`, `install_spatial`, `dump` (EXPORT DATABASE),
+`export_geojson` (COPY ... TO ... FORMAT GDAL DRIVER GeoJSON),
+`query`, `script`, `import_csv`, `import_parquet`, `import_geojson`,
+`import_shapefile`. *Never executes.*
+
+## Operator setup
+
+Required: `DUCKDB_DOCSBOX_PATH`. Example:
+
+```
+export DUCKDB_DOCSBOX_PATH='/srv/data/sydney.duckdb'
+duckdb-spatial-docsbox-mcp
+```
+
+Use `:memory:` for an ephemeral session — useful for evaluating
+external files via `probe_external_file` and ad-hoc analytics, but
+state is lost on shutdown.
+
+Optional env vars:
+
+| Var | Default | Notes |
+|-----|---------|-------|
+| `DUCKDB_DOCSBOX_STATEMENT_TIMEOUT_S` | 10.0 | Per-statement wall-clock bound (seconds) |
+| `DUCKDB_DOCSBOX_LOAD_SPATIAL` | 1 | Set to 0 to skip spatial bootstrap |
+| `DUCKDB_DOCSBOX_METADATA_EXCLUDES` | "" | Comma-separated `schema.table` to hide |
+| `DUCKDB_DOCSBOX_BIND` | 127.0.0.1:7821 | host:port |
+| `DUCKDB_DOCSBOX_CORPUS_DIR` | packaged | Override doc manifest dir |
+| `DUCKDB_DOCSBOX_DISABLE_DNS_PROTECTION` | unset | Tests only |
+| `DUCKDB_DOCSBOX_ALLOWED_HOSTS` | "" | Extra Host header values |
+| `DUCKDB_DOCSBOX_ALLOWED_ORIGINS` | "" | Extra Origin header values |

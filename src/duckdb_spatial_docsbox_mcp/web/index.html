@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>duckdb-spatial-docsbox-mcp</title>
+    <meta name="description" content="MCP server for safe read-only DuckDB + spatial exploration: schema introspection, GeoParquet/GDAL probing, validated SQL execution, and curated DuckDB+spatial reference." />
+    <link rel="canonical" href="https://duckdb-mcp.afterrealism.com/" />
+    <style>
+      :root { color-scheme: light dark; }
+      body { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+             max-width: 760px; margin: 2rem auto; padding: 0 1rem; line-height: 1.5; }
+      code, pre { font-family: ui-monospace, SFMono-Regular, monospace; }
+      pre { background: rgba(127,127,127,.12); padding: .75rem 1rem; border-radius: 6px;
+            overflow-x: auto; }
+      h1, h2 { line-height: 1.2; }
+      table { border-collapse: collapse; width: 100%; }
+      td, th { text-align: left; padding: .25rem .5rem; border-bottom: 1px solid rgba(127,127,127,.2); }
+      .pill { display: inline-block; padding: .1rem .5rem; border-radius: 99px;
+              background: rgba(127,127,127,.15); font-size: .85em; }
+    </style>
+  </head>
+  <body>
+    <h1>duckdb-spatial-docsbox-mcp <span class="pill">read-only</span></h1>
+    <p>
+      An MCP (Model Context Protocol) server that lets an LLM agent safely
+      explore and query a DuckDB database with the <code>spatial</code>
+      extension. File-mode databases are opened with
+      <code>read_only=True</code>; all SQL is statically validated before
+      execution and bounded by a per-statement wall-clock timeout
+      (enforced via <code>connection.interrupt()</code>).
+    </p>
+
+    <h2>Endpoints</h2>
+    <ul>
+      <li><code>GET /</code>          &mdash; this page</li>
+      <li><code>GET /health</code>     &mdash; JSON health</li>
+      <li><code>POST /mcp</code>       &mdash; MCP streamable HTTP transport</li>
+      <li><code>GET /llms.txt</code> &middot; <code>/llms-full.txt</code> &middot; <code>/robots.txt</code> &middot; <code>/sitemap.xml</code></li>
+    </ul>
+
+    <h2>Tools</h2>
+    <table>
+      <tr><th>Tool</th><th>Purpose</th></tr>
+      <tr><td><code>list_tables</code></td><td>User tables/views with row count &amp; geometry flag.</td></tr>
+      <tr><td><code>get_table_schema</code></td><td>DDL + sample rows + indexes for one table.</td></tr>
+      <tr><td><code>get_column_values</code></td><td>Distinct sample values for one column.</td></tr>
+      <tr><td><code>list_srids</code></td><td>SRIDs in active use (DuckDB stores all geometry as SRID 0).</td></tr>
+      <tr><td><code>get_relationships</code></td><td>Foreign-key edges.</td></tr>
+      <tr><td><code>list_extensions</code></td><td>Loaded/installed DuckDB extensions (spatial, parquet, ...).</td></tr>
+      <tr><td><code>pick_interesting_tables</code></td><td>Score by rows + geometry + R-Tree + FK hubness.</td></tr>
+      <tr><td><code>validate_sql</code></td><td>Static SQL safety check (no DB needed).</td></tr>
+      <tr><td><code>explain_sql</code></td><td>EXPLAIN [ANALYZE] text plan.</td></tr>
+      <tr><td><code>execute_sql</code></td><td>Read-only SELECT/WITH/EXPLAIN with row caps.</td></tr>
+      <tr><td><code>list_gdal_drivers</code></td><td>Installed GDAL drivers exposed via <code>ST_Drivers()</code>.</td></tr>
+      <tr><td><code>probe_external_file</code></td><td>Peek schema/sample of a CSV / Parquet / GeoJSON / SHP / GPKG file.</td></tr>
+      <tr><td><code>duckdb_help</code></td><td>Curated DuckDB+spatial recipe reference.</td></tr>
+      <tr><td><code>list_sections</code> / <code>get_documentation</code></td><td>Doc manifest browser.</td></tr>
+      <tr><td><code>run_locally</code></td><td>Plan-only execution recipes (duckdb CLI, EXPORT DATABASE, ST_Read, ...).</td></tr>
+    </table>
+
+    <h2>Configure</h2>
+<pre>export DUCKDB_DOCSBOX_PATH=/path/to/file.duckdb   # or :memory:
+duckdb-spatial-docsbox-mcp</pre>
+
+    <h2>opencode / Claude Code</h2>
+<pre>{
+  "mcpServers": {
+    "duckdb-spatial-docsbox": {
+      "type": "http",
+      "url": "http://127.0.0.1:7821/mcp"
+    }
+  }
+}</pre>
+  </body>
+</html>

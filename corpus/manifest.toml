@@ -1,0 +1,289 @@
+# Curated reference manifest for duckdb-spatial-docsbox-mcp.
+#
+# Each [[section]] entry is a heading + URL pair; tools resolve content by
+# fetching the URL on demand (cached). Keep entries grouped logically -- the
+# `package` filter on `list_sections` matches against the `package` field.
+
+[meta]
+generated = "2026-04-27"
+notes = "Curated DuckDB 1.1+ + spatial extension + GDAL/GeoParquet docs."
+
+# ---------------------------------------------------------------------------
+# DuckDB core
+# ---------------------------------------------------------------------------
+
+[[section]]
+id = "duckdb.intro"
+title = "DuckDB: Why DuckDB?"
+package = "duckdb"
+url = "https://duckdb.org/why_duckdb"
+
+[[section]]
+id = "duckdb.installation"
+title = "DuckDB: Installation"
+package = "duckdb"
+url = "https://duckdb.org/docs/installation/"
+
+[[section]]
+id = "duckdb.cli"
+title = "DuckDB: Command Line Interface"
+package = "duckdb"
+url = "https://duckdb.org/docs/api/cli"
+
+[[section]]
+id = "duckdb.python"
+title = "DuckDB: Python API"
+package = "duckdb"
+url = "https://duckdb.org/docs/api/python/overview"
+
+[[section]]
+id = "duckdb.sql.select"
+title = "DuckDB: SELECT statement"
+package = "duckdb"
+url = "https://duckdb.org/docs/sql/statements/select"
+
+[[section]]
+id = "duckdb.sql.with"
+title = "DuckDB: WITH (Common Table Expressions)"
+package = "duckdb"
+url = "https://duckdb.org/docs/sql/query_syntax/with"
+
+[[section]]
+id = "duckdb.sql.window"
+title = "DuckDB: Window Functions"
+package = "duckdb"
+url = "https://duckdb.org/docs/sql/window_functions"
+
+[[section]]
+id = "duckdb.sql.json"
+title = "DuckDB: JSON functions"
+package = "duckdb"
+url = "https://duckdb.org/docs/data/json/overview"
+
+[[section]]
+id = "duckdb.sql.aggregate"
+title = "DuckDB: Aggregate functions"
+package = "duckdb"
+url = "https://duckdb.org/docs/sql/aggregates"
+
+[[section]]
+id = "duckdb.sql.string"
+title = "DuckDB: Text functions"
+package = "duckdb"
+url = "https://duckdb.org/docs/sql/functions/text"
+
+[[section]]
+id = "duckdb.sql.datetime"
+title = "DuckDB: Date/Time functions"
+package = "duckdb"
+url = "https://duckdb.org/docs/sql/functions/datepart"
+
+[[section]]
+id = "duckdb.sql.list"
+title = "DuckDB: List functions"
+package = "duckdb"
+url = "https://duckdb.org/docs/sql/functions/list"
+
+[[section]]
+id = "duckdb.indexes"
+title = "DuckDB: Indexes (ART, R-Tree)"
+package = "duckdb"
+url = "https://duckdb.org/docs/sql/indexes"
+
+[[section]]
+id = "duckdb.explain"
+title = "DuckDB: EXPLAIN / EXPLAIN ANALYZE"
+package = "duckdb"
+url = "https://duckdb.org/docs/guides/meta/explain"
+
+[[section]]
+id = "duckdb.read_only"
+title = "DuckDB: Read-only mode"
+package = "duckdb"
+url = "https://duckdb.org/docs/connect/overview"
+
+[[section]]
+id = "duckdb.export_database"
+title = "DuckDB: EXPORT DATABASE / IMPORT DATABASE"
+package = "duckdb"
+url = "https://duckdb.org/docs/sql/statements/export"
+
+[[section]]
+id = "duckdb.copy"
+title = "DuckDB: COPY statement"
+package = "duckdb"
+url = "https://duckdb.org/docs/sql/statements/copy"
+
+[[section]]
+id = "duckdb.read_csv"
+title = "DuckDB: read_csv / read_csv_auto"
+package = "duckdb"
+url = "https://duckdb.org/docs/data/csv/overview"
+
+[[section]]
+id = "duckdb.read_parquet"
+title = "DuckDB: read_parquet"
+package = "duckdb"
+url = "https://duckdb.org/docs/data/parquet/overview"
+
+[[section]]
+id = "duckdb.attach"
+title = "DuckDB: ATTACH (multiple databases)"
+package = "duckdb"
+url = "https://duckdb.org/docs/sql/statements/attach"
+
+[[section]]
+id = "duckdb.extensions"
+title = "DuckDB: Extensions overview"
+package = "duckdb"
+url = "https://duckdb.org/docs/extensions/overview"
+
+# ---------------------------------------------------------------------------
+# DuckDB spatial extension
+# ---------------------------------------------------------------------------
+
+[[section]]
+id = "spatial.overview"
+title = "DuckDB spatial: Overview"
+package = "spatial"
+url = "https://duckdb.org/docs/extensions/spatial/overview"
+
+[[section]]
+id = "spatial.functions"
+title = "DuckDB spatial: Function reference"
+package = "spatial"
+url = "https://duckdb.org/docs/extensions/spatial/functions"
+
+[[section]]
+id = "spatial.geometry_type"
+title = "DuckDB spatial: Geometry type & semantics"
+package = "spatial"
+url = "https://duckdb.org/docs/extensions/spatial/overview#geometry-type"
+
+[[section]]
+id = "spatial.rtree"
+title = "DuckDB spatial: R-Tree index"
+package = "spatial"
+url = "https://duckdb.org/docs/extensions/spatial/r-tree-indexes"
+
+[[section]]
+id = "spatial.gdal"
+title = "DuckDB spatial: GDAL-based ST_Read / COPY ... FORMAT GDAL"
+package = "spatial"
+url = "https://duckdb.org/docs/extensions/spatial/gdal"
+
+[[section]]
+id = "spatial.st_distance"
+title = "DuckDB spatial: ST_Distance / ST_Distance_Sphere"
+package = "spatial"
+url = "https://duckdb.org/docs/extensions/spatial/functions#st_distance"
+
+[[section]]
+id = "spatial.st_intersects"
+title = "DuckDB spatial: ST_Intersects"
+package = "spatial"
+url = "https://duckdb.org/docs/extensions/spatial/functions#st_intersects"
+
+[[section]]
+id = "spatial.st_contains"
+title = "DuckDB spatial: ST_Contains (argument order matters)"
+package = "spatial"
+url = "https://duckdb.org/docs/extensions/spatial/functions#st_contains"
+
+[[section]]
+id = "spatial.st_buffer"
+title = "DuckDB spatial: ST_Buffer"
+package = "spatial"
+url = "https://duckdb.org/docs/extensions/spatial/functions#st_buffer"
+
+[[section]]
+id = "spatial.st_transform"
+title = "DuckDB spatial: ST_Transform (reproject)"
+package = "spatial"
+url = "https://duckdb.org/docs/extensions/spatial/functions#st_transform"
+
+[[section]]
+id = "spatial.st_asgeojson"
+title = "DuckDB spatial: ST_AsGeoJSON"
+package = "spatial"
+url = "https://duckdb.org/docs/extensions/spatial/functions#st_asgeojson"
+
+[[section]]
+id = "spatial.st_geomfromtext"
+title = "DuckDB spatial: ST_GeomFromText (WKT)"
+package = "spatial"
+url = "https://duckdb.org/docs/extensions/spatial/functions#st_geomfromtext"
+
+[[section]]
+id = "spatial.st_extent"
+title = "DuckDB spatial: ST_Extent / ST_Extent_Agg"
+package = "spatial"
+url = "https://duckdb.org/docs/extensions/spatial/functions#st_extent"
+
+[[section]]
+id = "spatial.st_makeenvelope"
+title = "DuckDB spatial: ST_MakeEnvelope (bbox)"
+package = "spatial"
+url = "https://duckdb.org/docs/extensions/spatial/functions#st_makeenvelope"
+
+[[section]]
+id = "spatial.st_drivers"
+title = "DuckDB spatial: ST_Drivers (list GDAL drivers)"
+package = "spatial"
+url = "https://duckdb.org/docs/extensions/spatial/functions#st_drivers"
+
+# ---------------------------------------------------------------------------
+# GeoParquet
+# ---------------------------------------------------------------------------
+
+[[section]]
+id = "geoparquet.spec"
+title = "GeoParquet: format specification"
+package = "geoparquet"
+url = "https://geoparquet.org/releases/v1.0.0/"
+
+[[section]]
+id = "geoparquet.duckdb"
+title = "GeoParquet: reading/writing from DuckDB"
+package = "geoparquet"
+url = "https://duckdb.org/docs/extensions/spatial/gdal#geoparquet"
+
+# ---------------------------------------------------------------------------
+# GDAL / OGR
+# ---------------------------------------------------------------------------
+
+[[section]]
+id = "gdal.geojson"
+title = "GDAL: GeoJSON driver"
+package = "gdal"
+url = "https://gdal.org/drivers/vector/geojson.html"
+
+[[section]]
+id = "gdal.shapefile"
+title = "GDAL: ESRI Shapefile driver"
+package = "gdal"
+url = "https://gdal.org/drivers/vector/shapefile.html"
+
+[[section]]
+id = "gdal.gpkg"
+title = "GDAL: GeoPackage vector driver"
+package = "gdal"
+url = "https://gdal.org/drivers/vector/gpkg.html"
+
+[[section]]
+id = "gdal.flatgeobuf"
+title = "GDAL: FlatGeobuf driver"
+package = "gdal"
+url = "https://gdal.org/drivers/vector/flatgeobuf.html"
+
+[[section]]
+id = "gdal.parquet"
+title = "GDAL: Parquet vector driver"
+package = "gdal"
+url = "https://gdal.org/drivers/vector/parquet.html"
+
+[[section]]
+id = "ogr2ogr"
+title = "GDAL: ogr2ogr command-line vector translator"
+package = "gdal"
+url = "https://gdal.org/programs/ogr2ogr.html"

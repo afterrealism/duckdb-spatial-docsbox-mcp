@@ -1,0 +1,62 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "duckdb-spatial-docsbox-mcp"
+version = "0.1.0"
+description = "Streamable-HTTP MCP server giving LLM agents safe, read-only situational awareness of a DuckDB database (with the spatial extension): schema, samples, distinct values, SRIDs, GDAL drivers, density picks, EXPLAIN-validated SELECT, and external-file probes via ST_Read."
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "afterrealism" }]
+requires-python = ">=3.11"
+dependencies = [
+  "mcp>=1.6",
+  "starlette>=0.41",
+  "uvicorn[standard]>=0.32",
+  "httpx>=0.28",
+  "pydantic>=2.10",
+  "duckdb>=1.1",
+  "sqlglot>=25.0",
+  "platformdirs>=4.3",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8",
+  "pytest-asyncio>=0.24",
+  "anyio>=4.7",
+]
+
+[project.scripts]
+duckdb-spatial-docsbox-mcp = "duckdb_spatial_docsbox_mcp.__main__:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/duckdb_spatial_docsbox_mcp"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"corpus/manifest.toml" = "duckdb_spatial_docsbox_mcp/_data/manifest.toml"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM", "RUF"]
+ignore = ["E501", "B008"]
+extend-safe-fixes = ["UP", "I"]
+
+[tool.ruff.lint.flake8-bugbear]
+extend-immutable-calls = ["pydantic.Field"]
+
+[tool.pyright]
+include = ["src", "tests"]
+pythonVersion = "3.11"
+typeCheckingMode = "standard"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+markers = [
+  "db: tests that require a running DuckDB fixture (loaded via examples/sample_data.sql); skipped unless --run-db is passed",
+]

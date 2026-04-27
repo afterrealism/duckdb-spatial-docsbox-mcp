@@ -1,0 +1,58 @@
+# duckdb-spatial-docsbox-mcp
+
+A Model Context Protocol (MCP) server giving an LLM agent **safe, bounded
+read-only access** to a DuckDB database with the `spatial` extension,
+plus a curated DuckDB + spatial reference and a docs/manifest lookup.
+
+## Safety properties
+
+- File-mode databases are opened with `read_only=True` at the storage
+  layer. `:memory:` databases fall back to validator-only enforcement
+  (a single shared writable connection is required for per-process
+  state, so the in-memory path is documented as best-effort).
+- Per-statement wall-clock timeout enforced via `threading.Timer` +
+  `connection.interrupt()` (DuckDB has no SQL-level `statement_timeout`).
+- User-supplied SQL is statically validated (sqlglot dialect="duckdb" +
+  denylist) before it ever reaches the database. Multi-statement
+  payloads, DDL, DML, and dangerous functions/keywords (`read_text`,
+  `read_blob`, `shell`, `system`, `INSTALL`, `LOAD`, `ATTACH`,
+  `DETACH`, `EXPORT`, `IMPORT`, `PRAGMA`, `CHECKPOINT`, `USE` ...) are
+  refused.
+- Result sizes are capped (rows, cell bytes, payload bytes).
+- The only subprocess tool (`run_locally`) is *plan-only* and never executes.
+
+## Endpoints
+
+- `GET /` HTML landing page
+- `GET /health` JSON health
+- `POST /mcp` MCP transport (streamable HTTP)
+- `GET /llms.txt` this file
+- `GET /llms-full.txt` longer reference
+- `GET /robots.txt`, `GET /sitemap.xml`
+
+## Tools
+
+| Tool | Purpose |
+|------|---------|
+| `list_tables` | User tables/views with row count, geometry flag |
+| `get_table_schema` | DDL + sample rows + indexes |
+| `get_column_values` | Distinct sample values for a column |
+| `list_srids` | SRIDs in active use (DuckDB stores all geometry as SRID 0) |
+| `get_relationships` | Foreign-key edges |
+| `list_extensions` | Loaded/installed DuckDB extensions |
+| `pick_interesting_tables` | Score by rows + geom + R-Tree + FK hubness |
+| `validate_sql` | Static safety check (no DB needed) |
+| `explain_sql` | EXPLAIN [ANALYZE] text plan |
+| `execute_sql` | SELECT/WITH/EXPLAIN with row caps |
+| `list_gdal_drivers` | Installed GDAL drivers via `ST_Drivers()` |
+| `probe_external_file` | Peek schema/sample of CSV/Parquet/GeoJSON/SHP/GPKG |
+| `duckdb_help` | Curated DuckDB+spatial recipe reference |
+| `list_sections` / `get_documentation` | Doc manifest browser |
+| `run_locally` | Plan-only execution recipes (duckdb CLI, ST_Read, ...) |
+
+## Configure
+
+```
+export DUCKDB_DOCSBOX_PATH=/path/to/file.duckdb   # or :memory:
+duckdb-spatial-docsbox-mcp
+```
